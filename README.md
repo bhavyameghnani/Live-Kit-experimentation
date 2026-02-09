@@ -1,165 +1,308 @@
-# Agent Starter for React
+# Multi-Agent Voice Assistant
 
-This is a starter template for [LiveKit Agents](https://docs.livekit.io/agents) that provides a simple voice interface using [Agents UI](https://livekit.io/ui) components and [LiveKit JavaScript SDK](https://github.com/livekit/client-sdk-js). It supports [voice](https://docs.livekit.io/agents/start/voice-ai), [transcriptions](https://docs.livekit.io/agents/build/text/), and [virtual avatars](https://docs.livekit.io/agents/integrations/avatar).
+A sophisticated multi-agent voice assistant system built with LiveKit Agents that seamlessly coordinates between a **Wealth Advisor** and **Real Estate Expert**. The system intelligently hands off conversations between specialized agents based on user questions, providing expert advice across financial planning and real estate domains.
 
-Also available for:
-[Android](https://github.com/livekit-examples/agent-starter-android) • [Flutter](https://github.com/livekit-examples/agent-starter-flutter) • [Swift](https://github.com/livekit-examples/agent-starter-swift) • [React Native](https://github.com/livekit-examples/agent-starter-react-native)
+## Key Features
 
-<picture>
-  <source srcset="./.github/assets/readme-hero-dark.webp" media="(prefers-color-scheme: dark)">
-  <source srcset="./.github/assets/readme-hero-light.webp" media="(prefers-color-scheme: light)">
-  <img src="./.github/assets/readme-hero-light.webp" alt="App screenshot">
-</picture>
+- **🤝 Intelligent Agent Handoff**: Automatic context-aware switching between Wealth Advisor and Real Estate Expert
+- **🎨 Visual Agent Distinction**: Color-coded transcript with blue borders for Wealth Advisor and green for Real Estate Expert
+- **🗣️ Natural Voice Interaction**: Real-time voice conversation with Deepgram STT/TTS
+- **🧠 Powered by Groq LLM**: Uses llama-3.3-70b-versatile model for intelligent responses
+- **💬 Full Transcript**: Complete conversation history with agent labels and smooth transitions
+- **🎯 Specialized Knowledge**: Each agent has domain-specific expertise and can seamlessly transfer when needed
 
-### Features:
+## The Agents
 
-- Real-time voice interaction with LiveKit Agents
-- Camera video streaming support
-- Screen sharing capabilities
-- Audio visualization and level monitoring
-- Virtual avatar integration
-- Light/dark theme switching with system preference detection
-- Customizable branding, colors, and UI text via configuration
+### 💼 Wealth Advisor (Primary Agent)
+- **Visual Identity**: Blue color scheme
+- **Expertise**: Financial planning, investment strategies, retirement planning, tax optimization
+- **Personality**: Professional, analytical, detail-oriented financial expert
+- **Handoff Trigger**: Detects questions about real estate and seamlessly transfers to the Real Estate Expert
 
-This template is built with Next.js and is free for you to use or modify as you see fit.
+### 🏡 Real Estate Expert
+- **Visual Identity**: Green color scheme
+- **Expertise**: Property investment, market analysis, real estate portfolio strategy
+- **Personality**: Knowledgeable real estate professional with market insights
+- **Handoff Trigger**: Returns to Wealth Advisor when financial planning questions arise
 
-### Project structure
+## Tech Stack
 
-This starter uses the [Agents UI](https://livekit.io/ui) components for core UI elements like media controls, audio visualizers, chat transcripts, and providing session data. Shadcn installs components into `components/` folder so you can customize them like any other local component.
+### Backend
+- **LiveKit Agents SDK** (v1.3.12) - Voice agent framework
+- **Python 3.13+** - Core runtime
+- **Groq LLM** - llama-3.3-70b-versatile model (temperature=0 for consistency)
+- **Deepgram** - Speech-to-text and text-to-speech
+- **Custom FilteredTTS** - Removes function call syntax from speech output
+
+### Frontend
+- **Next.js 15** - React framework with Turbopack
+- **TypeScript** - Type-safe development
+- **LiveKit Components** - Pre-built UI components for voice agents
+- **Tailwind CSS** - Utility-first styling
+- **shadcn/ui** - Beautiful, customizable UI components
+
+## Project Structure
 
 ```
-agent-starter-react/
+multi-agent-livekit-call/
+├── agent.py                    # Main agent entry point with handoff logic
+├── agents/
+│   ├── wealth_advisor.py       # Wealth Advisor agent definition
+│   ├── real_estate_expert.py   # Real Estate Expert agent definition
+│   └── utils.py                # Shared agent utilities
+├── knowledge/
+│   ├── wealth.py               # Wealth advisor knowledge base
+│   └── real_estate.py          # Real estate knowledge base
 ├── app/
-│   ├── api/
+│   ├── page.tsx                # Main page
+│   └── api/
+│       └── connection-details/ # LiveKit connection endpoint
 ├── components/
-│   ├── agents-ui/     - Agents UI components
-│   ├── ai-elements/   - AI Elements components
-│   ├── app/           - App-specific components
-│   ├── ui/            - Primitive shadcn/ui components
-├── fonts/
-├── hooks/
-├── lib/
-├── public/
-└── package.json
+│   ├── agents-ui/              # Enhanced LiveKit agent components
+│   │   └── agent-chat-transcript.tsx  # ⭐ Visual agent distinction
+│   ├── app/                    # Application components
+│   │   ├── session-view.tsx    # Session management
+│   │   └── chat-transcript.tsx # Transcript coordinator
+│   └── ui/                     # Base UI components
+├── .env.local                  # Environment configuration
+└── package.json                # Dependencies
 ```
 
-Business logic lives within the `components/app` folder. It's here where the application's state and behavior is managed and the various Shadcn UI components are composed together.
+### Key Files
 
-| File                  | Description                                                                                                                                           |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `session-view.tsx`    | Initializes the application, and LiveKit session. Renders the view controller and session UI including chat transcript, media tiles, and control bar. |
-| `view-controller.tsx` | Manages the transitions between the welcome and session views based on the LiveKit session state.                                                     |
-| `welcome-view.tsx`    | Renders the welcome UI when the LiveKit session is not connected.                                                                                     |
-| `chat-transcript.tsx` | Manages the chat transcript transitions.                                                                                                              |
-| `tile-layout.tsx`     | Manages the layout and transition of media tiles in various application states.                                                                       |
+| File | Description |
+|------|-------------|
+| `agent.py` | Python backend that initializes both agents and handles LiveKit session |
+| `agents/wealth_advisor.py` | Wealth Advisor agent class with financial expertise |
+| `agents/real_estate_expert.py` | Real Estate Expert agent with property knowledge |
+| `knowledge/wealth.py` | Financial planning context and knowledge base |
+| `knowledge/real_estate.py` | Real estate market data and strategies |
+| `components/agents-ui/agent-chat-transcript.tsx` | Enhanced transcript with visual agent distinction (blue/green) |
+| `components/app/session-view.tsx` | Manages LiveKit session and UI state |
 
-### Component usage
+## How It Works
 
-Most Agents UI components require access to a LiveKit session object for access to values like agent state or audio tracks. A Session object can be created from a [TokenSource](/reference/client-sdk-js/variables/TokenSource.html), and provided by wrapping the component in an [AgentSessionProvider](/reference/components/shadcn/component/agent-session-provider).
+### Agent Handoff System
 
-See [`components/app/app.tsx`](./components/app/app.tsx) for an example of how this is done in this app.
+The multi-agent system uses intelligent conversation analysis to determine when to hand off between agents:
 
-### Customizing components
+1. **Wealth Advisor** starts the conversation by default
+2. When user asks about real estate, the Wealth Advisor says: *"Let me connect you with our real estate expert..."*
+3. System seamlessly transitions to **Real Estate Expert** (visual indicator changes to green)
+4. When financial planning topics come up, Real Estate Expert says: *"I'm back to help with your wealth planning..."*
+5. Control returns to **Wealth Advisor** (visual indicator returns to blue)
 
-Agents UI components, like most Shadcn compopnents, take as many primitive attributes as possible. For example, the [AgentControlBar](/reference/components/shadcn/component/agent-control-bar/page.mdoc) component extends `HTMLAttributes<HTMLDivElement>`, so you can pass any props that a div supports. This makes it easy to extend the component with your own styles or functionality.
+### Visual Agent Distinction
 
-You can edit any Agents UI component's source code in the `components/agents-ui` directory. For style changes, we recommend passing in tailwind classes to override the default styles. Take a look at the source code to get a sense of how to override a component's default styles.
+The transcript UI (`agent-chat-transcript.tsx`) provides clear visual feedback:
 
-### Updating components
+- **`tagMessagesWithAgent()`**: Analyzes conversation flow and tags each message with the speaking agent
+- **`detectAgentFromMessage()`**: Detects handoff phrases like "real estate expert" or "I'm back"
+- **`getAgentStyles()`**: Returns agent-specific CSS classes
+  - Wealth Advisor: `border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20`
+  - Real Estate Expert: `border-l-green-500 bg-green-50/50 dark:bg-green-950/20`
+- **Agent Labels**: Display "Wealth Advisor" or "Real Estate Expert" on first message from each agent
 
-To update the Agents UI components to the latest publication, run the following command:
+### Speech Output Filtering
 
-```bash
-pnpm shadcn:install
+Custom `FilteredTTS` class removes function call syntax from speech:
+- Filters out patterns like `**transferToAgent(...)`, `**calculate(...)`, etc.
+- Ensures natural, clean voice output without technical artifacts
+- Maintains conversation flow during agent transitions
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js** 18+ and **pnpm** (or npm/yarn)
+- **Python** 3.13+
+- **LiveKit account** (free at [livekit.io](https://livekit.io))
+- **Groq API key** (free at [console.groq.com](https://console.groq.com))
+- **Deepgram API key** (free at [deepgram.com](https://deepgram.com))
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd multi-agent-livekit-call
+   ```
+
+2. **Install frontend dependencies**
+   ```bash
+   pnpm install
+   ```
+
+3. **Install Python dependencies**
+   ```bash
+   pip install -r req.txt
+   ```
+
+4. **Configure environment variables**
+   
+   Create `.env.local` in the root directory:
+   ```env
+   # LiveKit Configuration
+   LIVEKIT_URL=wss://your-project.livekit.cloud
+   LIVEKIT_API_KEY=your_api_key
+   LIVEKIT_API_SECRET=your_api_secret
+   
+   # AI Services
+   GROQ_API_KEY=your_groq_api_key
+   DEEPGRAM_API_KEY=your_deepgram_api_key
+   ```
+
+### Running the Application
+
+1. **Start the Python agent backend**
+   ```bash
+   python agent.py dev
+   ```
+   
+   This starts the LiveKit agent with both Wealth Advisor and Real Estate Expert.
+
+2. **Start the Next.js frontend** (in a separate terminal)
+   ```bash
+   pnpm dev
+   ```
+   
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+3. **Start a conversation**
+   - Click "Start call" to begin
+   - Try asking: "What's a good investment strategy for retirement?"
+   - Then: "What about real estate investment opportunities?"
+   - Watch the agent smoothly hand off and the UI change colors!
+
+## Customization
+
+### Adding New Agents
+
+1. Create a new agent file in `agents/` (e.g., `tax_specialist.py`)
+2. Define agent personality and knowledge in `knowledge/`
+3. Add handoff logic in `agent.py`
+4. Update `agent-chat-transcript.tsx` to add new color scheme
+5. Define detection phrase in `detectAgentFromMessage()`
+
+### Modifying Agent Personalities
+
+Edit the system prompts in:
+- `agents/wealth_advisor.py` - Wealth Advisor personality and expertise
+- `agents/real_estate_expert.py` - Real Estate Expert tone and knowledge
+
+### Changing Visual Styles
+
+Update colors in `components/agents-ui/agent-chat-transcript.tsx`:
+```typescript
+function getAgentStyles(agent: string | null) {
+  switch (agent) {
+    case 'wealth':
+      return 'border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20';
+    case 'real_estate':
+      return 'border-l-green-500 bg-green-50/50 dark:bg-green-950/20';
+    // Add your custom agent colors here
+  }
+}
 ```
 
-> [!NOTE]
-> The CLI will ask before overwriting any modified files so you can avoid losing any customizations you might have made.
+## Configuration
 
-### Installing components
+### App Configuration (`app-config.ts`)
 
-```bash
-pnpm dlx shadcn@latest add @agents-ui/{component-name-a} @agents-ui/{component-name-b}
+Customize branding and features:
+
+```typescript
+export const APP_CONFIG_DEFAULTS: AppConfig = {
+  companyName: 'Your Company',
+  pageTitle: 'Multi-Agent Financial Advisor',
+  pageDescription: 'AI-powered wealth and real estate advice',
+  
+  supportsChatInput: true,
+  supportsVideoInput: false,
+  supportsScreenShare: false,
+  
+  startButtonText: 'Start Consultation',
+  // ... other settings
+};
 ```
 
-## Getting started
+### Agent Configuration
 
-> [!TIP]
-> If you'd like to try this application without modification, you can deploy an instance in just a few clicks with [LiveKit Cloud Sandbox](https://cloud.livekit.io/projects/p_/sandbox/templates/agent-starter-react).
+Modify agent behavior in respective files:
+- **Temperature**: Set to 0 in `agent.py` for deterministic responses
+- **Model**: Currently uses `llama-3.3-70b-versatile` (Groq)
+- **Voice**: Deepgram's `aura-asteria-en` for natural speech
 
-[![Open on LiveKit](https://img.shields.io/badge/Open%20on%20LiveKit%20Cloud-002CF2?style=for-the-badge&logo=external-link)](https://cloud.livekit.io/projects/p_/sandbox/templates/agent-starter-react)
+## Architecture Highlights
 
-Run the following command to automatically clone this template.
+### Frontend
+- **React Components**: Modular, reusable UI components
+- **Real-time Updates**: LiveKit SDK for instant transcript updates
+- **Performance**: `useMemo` for efficient agent tag computation
+- **Responsive**: Works on desktop and mobile browsers
 
+### Backend
+- **Multi-Agent Pattern**: Clean separation of agent responsibilities
+- **Knowledge Separation**: Modular knowledge bases for each domain
+- **Session Management**: LiveKit handles connection lifecycle
+- **Error Handling**: Graceful fallbacks and reconnection logic
+
+## Troubleshooting
+
+### Frontend won't start
 ```bash
-lk app create --template agent-starter-react
-```
-
-Then run the app with:
-
-```bash
+# Clear dependencies and reinstall
+rm -rf node_modules .next
 pnpm install
 pnpm dev
 ```
 
-And open http://localhost:3000 in your browser.
+### Agent won't connect
+- Verify `.env.local` has correct LiveKit credentials
+- Check LiveKit project is active at [cloud.livekit.io](https://cloud.livekit.io)
+- Ensure Python agent is running (`python agent.py dev`)
 
-You'll also need an agent to speak with. Try our starter agent for [Python](https://github.com/livekit-examples/agent-starter-python), [Node.js](https://github.com/livekit-examples/agent-starter-node), or [create your own from scratch](https://docs.livekit.io/agents/start/voice-ai/).
+### No audio
+- Check microphone permissions in browser
+- Verify Deepgram API key is valid
+- Test with browser console open to see errors
 
-## Configuration
+### Agent doesn't hand off
+- Check handoff phrases in agent code match expected patterns
+- Review `detectAgentFromMessage()` logic in `agent-chat-transcript.tsx`
+- Ensure agent responses include trigger phrases
 
-This starter is designed to be flexible so you can adapt it to your specific agent use case. You can easily configure it to work with different types of inputs and outputs:
+## Development Tips
 
-#### Example: App configuration (`app-config.ts`)
+- **Debug Mode**: Check browser console for transcript tagging logic
+- **Agent Testing**: Test each agent independently before adding handoffs
+- **Knowledge Updates**: Modify knowledge bases without changing core agent logic
+- **UI Customization**: All visual components are in `components/` and fully editable
 
-```ts
-export const APP_CONFIG_DEFAULTS: AppConfig = {
-  companyName: 'LiveKit',
-  pageTitle: 'LiveKit Voice Agent',
-  pageDescription: 'A voice agent built with LiveKit',
+## Deployment
 
-  supportsChatInput: true,
-  supportsVideoInput: true,
-  supportsScreenShare: true,
-  isPreConnectBufferEnabled: true,
-
-  logo: '/lk-logo.svg',
-  accent: '#002cf2',
-  logoDark: '/lk-logo-dark.svg',
-  accentDark: '#1fd5f9',
-  startButtonText: 'Start call',
-
-  // agent dispatch configuration
-  agentName: undefined,
-
-  // LiveKit Cloud Sandbox configuration
-  sandboxId: undefined,
-};
+### Frontend (Vercel)
+```bash
+vercel deploy
 ```
 
-You can update these values in [`app-config.ts`](./app-config.ts) to customize branding, features, and UI text for your deployment.
+### Backend (LiveKit Cloud Agents)
+Follow [LiveKit Agents deployment guide](https://docs.livekit.io/agents/deployment)
 
-> [!NOTE]
-> The `sandboxId` is for the LiveKit Cloud Sandbox environment.
-> It is not used for local development.
+## Use Cases
 
-#### Environment Variables
+- **Financial Advisory**: Comprehensive wealth planning with specialized real estate advice
+- **Customer Support**: Multi-department support with intelligent routing
+- **Education**: Subject-matter experts that hand off based on topic
+- **Healthcare**: Primary care agents that refer to specialists
 
-You'll also need to configure your LiveKit credentials in `.env.local` (copy `.env.example` if you don't have one):
+## Resources
 
-```env
-LIVEKIT_API_KEY=your_livekit_api_key
-LIVEKIT_API_SECRET=your_livekit_api_secret
-LIVEKIT_URL=https://your-livekit-server-url
+- [LiveKit Agents Documentation](https://docs.livekit.io/agents)
+- [LiveKit Components React](https://docs.livekit.io/reference/components-react)
+- [Groq API Documentation](https://console.groq.com/docs)
+- [Deepgram API Documentation](https://developers.deepgram.com)
 
-# Agent dispatch (https://docs.livekit.io/agents/server/agent-dispatch)
-# Leave AGENT_NAME blank to enable automatic dispatch
-# Provide an agent name to enable explicit dispatch
-AGENT_NAME=
-```
+## License
 
-These are required for the voice agent functionality to work with your LiveKit project.
-
-## Contributing
-
-This template is open source and we welcome contributions! Please open a PR or issue through GitHub, and don't forget to join us in the [LiveKit Community Slack](https://livekit.io/join-slack)!
+This project demonstrates multi-agent voice assistant capabilities. Customize freely for your use case.
