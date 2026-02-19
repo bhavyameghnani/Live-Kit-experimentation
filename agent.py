@@ -76,24 +76,45 @@ def filter_function_syntax(text: str) -> str:
 class FilteredSynthesizeStream:
     """Wrapper around SynthesizeStream that filters text before synthesis.
     
-    This intercepts push_text() calls to filter out function syntax.
+    This intercepts push_text() calls to filter out function syntax and
+    buffers text chunks to ensure complete words are sent to TTS.
     """
     
     def __init__(self, stream):
         self._stream = stream
+        self._buffer = ""
     
     def push_text(self, text: str) -> None:
-        """Filter text before pushing to underlying stream."""
-        filtered = filter_function_syntax(text)
-        if filtered:
-            self._stream.push_text(filtered)
-        else:
-            logger.info(f"[TTS STREAM] Filtered out: {text[:50]}...")
+        """Filter text and buffer it until we have complete words."""
+        # Add to buffer
+        self._buffer += text
+        
+        # Only send complete sentences or phrases (text ending with space or punctuation)
+        if self._buffer.endswith((' ', '.', ',', '!', '?', '\n', ':')):
+            filtered = filter_function_syntax(self._buffer)
+            if filtered:
+                self._stream.push_text(filtered)
+                self._buffer = ""
+            else:
+                logger.info(f"[TTS STREAM] Filtered out: {self._buffer[:50]}...")
+                self._buffer = ""
     
     def flush(self) -> None:
+        # Flush any remaining buffered text first
+        if self._buffer:
+            filtered = filter_function_syntax(self._buffer)
+            if filtered:
+                self._stream.push_text(filtered)
+            self._buffer = ""
         self._stream.flush()
     
     def end_input(self) -> None:
+        # Flush any remaining buffered text before ending
+        if self._buffer:
+            filtered = filter_function_syntax(self._buffer)
+            if filtered:
+                self._stream.push_text(filtered)
+            self._buffer = ""
         self._stream.end_input()
     
     async def aclose(self) -> None:
@@ -314,9 +335,11 @@ class WealthAdvisor(Agent):
         
         super().__init__(
             instructions=system_prompt,
-            tts=FilteredTTS(model="aura-2-mars-en")
+            tts=FilteredTTS(
+                model="aura-orpheus-en"
+            )
         )
-        logger.info("[WEALTH ADVISOR] Initialized with mars-en voice")
+        logger.info("[WEALTH ADVISOR] Initialized with arcas-en voice (male)")
     
     async def on_enter(self):
         """Lifecycle hook called automatically when this agent becomes active.
@@ -382,9 +405,11 @@ class RealEstateExpert(Agent):
         
         super().__init__(
             instructions=system_prompt,
-            tts=FilteredTTS(model="aura-2-thalia-en")  # Different voice
+            tts=FilteredTTS(
+                model="aura-hera-en"
+            )  # Different voice
         )
-        logger.info("[REAL ESTATE EXPERT] Initialized with thalia-en voice")
+        logger.info("[REAL ESTATE EXPERT] Initialized with athena-en voice (female)")
     
     async def on_enter(self):
         """Lifecycle hook called automatically when this agent becomes active after handoff."""
@@ -456,7 +481,9 @@ async def entrypoint(ctx: JobContext):
             temperature=0,  # Deterministic output
             parallel_tool_calls=False,  # Single tool call at a time
         ),
-        tts=FilteredTTS(model="aura-2-mars-en"),
+        tts=FilteredTTS(
+            model="aura-orpheus-en"
+        ),
     )
 
     # Create and start with initial agent
